@@ -7,6 +7,7 @@ import { format } from 'util';
 import * as path from 'path';
 import * as cp from 'child_process';
 import * as os from 'os';
+import * as fs from 'fs';
 import * as ec from './extensionChannel';
 
 var previewContent: any = {};
@@ -55,6 +56,18 @@ function onPreviewHtml(event: any) {
         event.body.uri, event.body.position, event.body.title);
 }
 
+function startDebugSession(context: ExtensionContext, config: any) {
+    if (Object.keys(config).length == 0 && workspace.rootPath) {
+        if (fs.existsSync(path.join(workspace.rootPath, 'Cargo.toml'))) {
+            config.type = 'lldb';
+            config.request = 'launch';
+            config.name = 'Launch';
+            config.program = '${workspaceRoot}/target/debug/';
+        }
+    }
+    commands.executeCommand('vscode.startDebug', config);
+}
+
 async function getAdapterExecutable(context: ExtensionContext): Promise<any> {
     let port = await ec.startListener();
     ec.channel().addListener('previewHtml', onPreviewHtml);
@@ -97,10 +110,6 @@ async function launchDebugServer(context: ExtensionContext) {
         format('lldb -b -O "command script import \'%s\'" ', adapterPath) +
         format('-O "script adapter.main.run_tcp_server(ext_channel_port=%d)"\n', port);
     terminal.sendText(command);
-}
-
-function startDebugSession(context: ExtensionContext, args: any) {
-    return args;
 }
 
 async function showDisassembly(context: ExtensionContext) {

@@ -137,7 +137,8 @@
                     "pickMyProcess": "lldb.pickMyProcess"
                 },
                 "adapterExecutableCommand": "lldb.getAdapterExecutable",
-                "_startSessionCommand": "lldb.startDebugSession",
+                "startSessionCommand": "lldb.startDebugSession",
+                "languages": ["rust"],
                 "configurationAttributes": {
                     "launch": {
                         "required": [
