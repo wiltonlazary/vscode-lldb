@@ -5,6 +5,7 @@ import {
 } from 'vscode';
 import * as cp from 'child_process';
 import * as path from 'path';
+import * as fs from 'fs';
 import { format } from 'util';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import * as startup from './startup';
@@ -61,6 +62,9 @@ async function startDebugSession(context: ExtensionContext, config: any) {
             return;
     }
     try {
+        if (!config.type) {
+            config = await generateLaunchConfig();
+        }
         let session = await startup.startDebugAdapter(context);
         config.debugServer = session.port;
         await commands.executeCommand('vscode.startDebug', config);
@@ -175,4 +179,52 @@ async function provideHtmlContent(uri: Uri): Promise<string> {
     } else {
         return result.body.content;
     }
+}
+
+async function generateLaunchConfig(): Promise<any> {
+    if (fs.existsSync(path.join(workspace.rootPath, 'Cargo.toml'))) {
+        let meta = await getCargoMetadata();
+        let items: QuickPickItem[] = [];
+        for (var pkg of meta.packages) {
+            for (var target of pkg.targets) {
+                if ((target.kind as string[]).indexOf('bin') >= 0) {
+                    let item = {
+                        label: target.name,
+                        description: '...',
+                        detail: path.relative(workspace.rootPath, target.src_path)
+                    };
+                    items.unshift(item);
+                }
+            }
+        }
+        let item = await window.showQuickPick(items, { placeHolder: 'Select target to debug' });
+        if (item) {
+            return {
+                name: 'Debug ' + item.label,
+                type: 'lldb',
+                request: 'launch',
+                program: path.join(meta.target_directory, 'debug', item.label)
+            }
+        }
+    }
+    return null;
+}
+
+async function getCargoMetadata(): Promise<any> {
+    return new Promise<any>((resolve, reject) => {
+        let cargo = cp.spawn('cargo', ['metadata',  '--no-deps', '--format-version=1'], {
+            cwd: workspace.rootPath,
+            stdio: ['ignore', 'pipe', 'ignore']
+        });
+        cargo.on('error', (err) => {
+            reject(err);
+        });
+        var output = '';
+        cargo.stdout.on('data', (chunk) => {
+            output += chunk;
+        });
+        cargo.stdout.on('close', () => {
+            resolve(JSON.parse(output));
+        });
+    });
 }
