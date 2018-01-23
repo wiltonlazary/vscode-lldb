@@ -471,6 +471,7 @@ def test_preprocess_simple():
         ${std::integral_constant<long, 1l>::value}
         ${std::integral_constant<long, 1l, foo<123>>::value}
         ${std::allocator_traits<std::allocator<std::thread::_Impl<std::_Bind_simple<threads(int)::__lambda0(int)> > > >::__construct_helper<std::thread::_Impl<std::_Bind_simple<threads(int)::__lambda0(int)> >, std::_Bind_simple<threads(int)::__lambda0(int)> >::value}
+        vec_int.${std::_Vector_base<std::vector<int, std::allocator<int> >, std::allocator<std::vector<int, std::allocator<int> > > >}._M_impl._M_start
         '''continue.exec = pass.print; yield.with = 3'''
         "continue.exec = pass.print; yield.with = 3"
     """
@@ -486,6 +487,7 @@ def test_preprocess_simple():
         __frame_vars["std::integral_constant<long, 1l>::value"]
         __frame_vars["std::integral_constant<long, 1l, foo<123>>::value"]
         __frame_vars["std::allocator_traits<std::allocator<std::thread::_Impl<std::_Bind_simple<threads(int)::__lambda0(int)> > > >::__construct_helper<std::thread::_Impl<std::_Bind_simple<threads(int)::__lambda0(int)> >, std::_Bind_simple<threads(int)::__lambda0(int)> >::value"]
+        vec_int.__getattr__("std::_Vector_base<std::vector<int, std::allocator<int> >, std::allocator<std::vector<int, std::allocator<int> > > >")._M_impl._M_start
         '''continue.exec = pass.print; yield.with = 3'''
         "continue.exec = pass.print; yield.with = 3"
     """
