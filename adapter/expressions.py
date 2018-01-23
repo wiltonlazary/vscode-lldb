@@ -406,7 +406,7 @@ maybe_qualified_ident = r'(?: ::)? (?: {ident} ::)* {ident}'.format(**locals())
 # Matches `$xxx`, `$xxx::yyy::zzz` or `${...}`
 escaped_ident = r'\$ ({maybe_qualified_ident}) | \$ {{ ([^}}]*) }}'.format(**locals())
 
-preprocess_simple = r'(\.)? (\b (?:{keywords}) \b | {qualified_ident}) | {escaped_ident} | {pystring}'
+preprocess_simple = r'(\.)? {pystring} | (:? \b ({keywords}) \b | ({qualified_ident}) | {escaped_ident} )'
 
 preprocess_python = r'(\.)? {escaped_ident} | {pystring}'
 
@@ -519,6 +519,7 @@ def test_escape_variable_name():
     assert escape_variable_name('foo::bar<34>::value') == '${foo::bar<34>::value}'
 
 def run_tests():
+    print preprocess_simple_regex.pattern
     test_preprocess_simple()
     test_preprocess_python()
     test_escape_variable_name()
